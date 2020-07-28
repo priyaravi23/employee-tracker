@@ -25,7 +25,9 @@ INSERT INTO roles (id, title, salary, department_id)
 VALUES(21, "Marketing Assistant", 10.10, 002);
 
 INSERT INTO roles (id, title, salary, department_id)
-VALUES(30, "Engineering Manager", 100.00, 003);
+VALUES(30, "Engineering Manager", 200.00, 003);
+INSERT INTO roles (id, title, salary, department_id)
+VALUES(15, "Software Engineering Lead", 168.00, 003);
 INSERT INTO roles (id, title, salary, department_id)
 VALUES(31, "Senior Engineer", 90.50, 003);
 INSERT INTO roles (id, title, salary, department_id)

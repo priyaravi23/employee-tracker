@@ -35,6 +35,7 @@ function mainMenu() {
                 "Add an employee",
                 "Update an employee",
                 "Delete employee",
+                "Delete role",
                 "Exit"
             ]
         })
@@ -64,6 +65,9 @@ function mainMenu() {
                     break;
                 case "Delete employee":
                     deleteEmployee();
+                    break;
+                case "Delete role":
+                    deleteRole();
                     break;
                 case "Exit":
                     connection.end();
@@ -308,4 +312,78 @@ function mainMenu() {
         })
     }
 
+    function deleteRole() {
+
+        // Create role array
+        let roleArr = [];
+
+        // query all roles
+        connection.query("SELECT roles.id, title FROM roles", function (err, res) {
+            // add all roles to array
+            for (i = 0; i < res.length; i++) {
+                roleArr.push(res[i].title);
+            }
+
+            inquirer.prompt([{
+                // confirm to continue to select role to delete
+                name: "continueDelete",
+                type: "list",
+                message: "*** WARNING *** Deleting role will delete all employees associated with the role. Do you want to continue?",
+                choices: ["NO", "YES"]
+            }]).then((answer) => {
+
+                // if not, go to main menu
+                if (answer.continueDelete === "NO") {
+                    mainMenu();
+                }
+
+            }).then(() => {
+
+                inquirer.prompt([{
+                    // prompt user of of roles
+                    name: "role",
+                    type: "list",
+                    message: "Which role would you like to delete?",
+                    choices: roleArr
+                }, {
+                    // confirm to delete role by typing role exactly
+                    name: "confirmDelete",
+                    type: "Input",
+                    message: "Type the role title EXACTLY to confirm deletion of the role"
+
+                }]).then((answer) => {
+
+                    if (answer.confirmDelete === answer.role) {
+
+                        // get role id of of selected role
+                        let roleID;
+                        for (i=0; i < res.length; i++){
+                            if (answer.role == res[i].title){
+                                roleID = res[i].id;
+                            }
+                        }
+
+                        // delete role
+                        connection.query(`DELETE FROM roles WHERE id=${roleID};`, (err, res) => {
+                            if(err) return err;
+
+                            // confirm role has been added
+                            console.log(`\n ROLE '${answer.role}' DELETED...\n `);
+
+                            //back to main menu
+                            mainMenu();
+                        });
+                    }
+                    else {
+
+                        // if not confirmed, do not delete
+                        console.log(`\n ROLE '${answer.role}' NOT DELETED...\n `);
+
+                        //back to main menu
+                        mainMenu();
+                    }
+                });
+            })
+        });
+    }
 }
