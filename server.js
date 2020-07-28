@@ -95,7 +95,7 @@ function mainMenu() {
     };
 
     function viewEmployees() {
-        let query = "SELECT * FROM  employee";
+        let query = "SELECT e.id, e.first_name, e.last_name, roles.title, departments.department_name AS department, roles.salary, concat(m.first_name, ' ' ,  m.last_name) AS manager FROM employee e LEFT JOIN employee m ON e.manager_id = m.id INNER JOIN roles ON e.role_id = roles.id INNER JOIN departments ON roles.department_id = departments.id ORDER BY id ASC";
         connection.query(query, function(err, res) {
             console.table(res);
             mainMenu();
