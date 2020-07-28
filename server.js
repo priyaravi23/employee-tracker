@@ -33,7 +33,9 @@ function mainMenu() {
                 "Add a department",
                 "Add a role",
                 "Add an employee",
-                "update an employee"
+                "Update an employee",
+                "Delete employee",
+                "Exit"
             ]
         })
 
@@ -59,6 +61,12 @@ function mainMenu() {
                     break;
                 case "update an employee":
                     updateEmployee();
+                    break;
+                case "Delete employee":
+                    deleteEmployee();
+                    break;
+                case "Exit":
+                    connection.end();
                     break;
             }
         });
@@ -237,5 +245,67 @@ function mainMenu() {
                         }
                     )}
                 )}
-        )};
+        )
+    }
+
+    function deleteEmployee() {
+
+        // Create global employee array
+        let employeeArr = [];
+
+        connection.query("SELECT employee.id, concat(employee.first_name, ' ' ,  employee.last_name) AS employee FROM employee ORDER BY Employee ASC", function(err, res) {
+            // Place all employees in array
+            for (i = 0; i < res.length; i++) {
+                employeeArr.push(res[i].employee);
+            }
+
+            inquirer.prompt([
+                {
+                    // prompt user of all employees
+                    name: "employee",
+                    type: "list",
+                    message: "Who would you like to delete?",
+                    choices: employeeArr
+                }, {
+                    // confirm delete of employee
+                    name: "yesNo",
+                    type: "list",
+                    message: "Confirm deletion",
+                    choices: ["NO", "YES"]
+                }]).then((answer) => {
+
+                if (answer.yesNo == "YES") {
+                    let employeeID;
+
+                    // if confirmed, get ID of employee selected
+                    for (i = 0; i < res.length; i++) {
+                        if (answer.employee == res[i].employee) {
+                            employeeID = res[i].id;
+                        }
+                    }
+
+                    // deleted selected employee
+                    connection.query(`DELETE FROM employee WHERE id=${employeeID};`, (err, res) => {
+                        if (err) return err;
+
+                        // confirm deleted employee
+                        console.log(`\n EMPLOYEE '${answer.employee}' DELETED...\n `);
+
+                        // back to main menu
+                        mainMenu();
+                    });
+                }
+                else {
+
+                    // if not confirmed, go back to main menu
+                    console.log(`\n EMPLOYEE '${answer.employee}' NOT DELETED...\n `);
+
+                    // back to main menu
+                    mainMenu();
+                }
+
+            });
+        })
+    }
+
 }
