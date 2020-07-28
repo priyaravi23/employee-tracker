@@ -4,7 +4,11 @@
 
 ### App Demo
 
+![](images/demo-1.gif)
 
+![](images/demo-2.gif)
+
+![](images/demo-3.gif)
 
 ### User Story 
 
