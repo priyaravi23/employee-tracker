@@ -1,14 +1,17 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
+const promisemysql = require("promise-mysql");
 
-const connection = mysql.createConnection({
+const connectionProperties = {
     host: "localhost",
     port: 3306,
     user: "root",
     password: "Bio_medical23",
     database: "all_employees"
-});
+};
+
+const connection = mysql.createConnection(connectionProperties);
 
 // establishes connection to db
 connection.connect(err => {
@@ -33,6 +36,7 @@ function mainMenu() {
                 "Add a department",
                 "Add a role",
                 "Add an employee",
+                "Update employee role",
                 "Update employee manager",
                 "Delete employee",
                 "Delete role",
@@ -60,6 +64,9 @@ function mainMenu() {
                     break;
                 case "Add an employee":
                     addEmployee();
+                    break;
+                case "Update employee role":
+                    updateEmpRole();
                     break;
                 case "Update employee manager":
                     updateEmpMngr();
@@ -219,6 +226,84 @@ function mainMenu() {
                 );
             });
     };
+
+    function updateEmpRole() {
+
+        // create employee and role array
+        let employeeArr = [];
+        let roleArr = [];
+
+        // Create connection using promise-sql
+        promisemysql.createConnection(connectionProperties
+        ).then((conn) => {
+            return Promise.all([
+
+                // query all roles and employee
+                conn.query('SELECT id, title FROM roles ORDER BY title ASC'),
+                conn.query("SELECT employee.id, concat(employee.first_name, ' ' ,  employee.last_name) AS Employee FROM employee ORDER BY Employee ASC")
+            ]);
+        }).then(([roles, employees]) => {
+
+            // place all roles in array
+            for (i=0; i < roles.length; i++){
+                roleArr.push(roles[i].title);
+            }
+
+            // place all empoyees in array
+            for (i=0; i < employees.length; i++){
+                employeeArr.push(employees[i].Employee);
+                //console.log(value[i].name);
+            }
+
+            return Promise.all([roles, employees]);
+        }).then(([roles, employees]) => {
+
+            inquirer.prompt([
+                {
+                    // prompt user to select employee
+                    name: "employee",
+                    type: "list",
+                    message: "Who would you like to edit?",
+                    choices: employeeArr
+                }, {
+                    // Select role to update employee
+                    name: "role",
+                    type: "list",
+                    message: "What is their new role?",
+                    choices: roleArr
+                },]).then((answer) => {
+
+                let roleID;
+                let employeeID;
+
+                /// get ID of role selected
+                for (i=0; i < roles.length; i++){
+                    if (answer.role == roles[i].title){
+                        roleID = roles[i].id;
+                    }
+                }
+
+                // get ID of employee selected
+                for (i=0; i < employees.length; i++){
+                    if (answer.employee == employees[i].Employee){
+                        employeeID = employees[i].id;
+                    }
+                }
+
+                // update employee with new role
+                connection.query(`UPDATE employee SET role_id = ${roleID} WHERE id = ${employeeID}`, (err, res) => {
+                    if(err) return err;
+
+                    // confirm update employee
+                    console.log(`\n ${answer.employee} ROLE UPDATED TO ${answer.role}...\n `);
+
+                    // back to main menu
+                    mainMenu();
+                });
+            });
+        });
+
+    }
 
     function updateEmpMngr() {
 
