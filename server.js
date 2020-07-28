@@ -33,10 +33,10 @@ function mainMenu() {
                 "Add a department",
                 "Add a role",
                 "Add an employee",
-                "Update an employee",
                 "Update employee manager",
                 "Delete employee",
                 "Delete role",
+                "Delete department",
                 "Exit"
             ]
         })
@@ -61,9 +61,6 @@ function mainMenu() {
                 case "Add an employee":
                     addEmployee();
                     break;
-                case "update an employee":
-                    updateEmployee();
-                    break;
                 case "Update employee manager":
                     updateEmpMngr();
                     break;
@@ -72,6 +69,9 @@ function mainMenu() {
                     break;
                 case "Delete role":
                     deleteRole();
+                    break;
+                case "Delete department":
+                    deleteDepartment();
                     break;
                 case "Exit":
                     connection.end();
@@ -219,42 +219,6 @@ function mainMenu() {
                 );
             });
     };
-
-
-    function updateEmployee() {
-        let choices = [];
-
-        connection.query("SELECT first_name FROM  employee", function(err, res) {
-            res.forEach(row => {
-                choices.push(row.first_name);
-                return choices;
-            });
-
-            inquirer
-                .prompt([{
-                    name: "employeeName",
-                    type: 'list',
-                    message: "Which employee you would like to update?",
-                    choices: choices
-                },
-                    {
-                        name: "empNewRole",
-                        type: "input",
-                        message: "What is the new role ID of the employee?",
-                    }])
-                .then(function(response) {
-                    connection.query(
-                        `UPDATE employee SET role_id = ${response.empNewRole} WHERE first_name = "${response.employeeName}"`, {
-                        },
-                        function(err) {
-                            if (err) throw err;
-                            console.log("Employee Updated!");
-                            mainMenu();
-                        }
-                    )}
-                )}
-        )
-    }
 
     function updateEmpMngr() {
 
@@ -444,6 +408,84 @@ function mainMenu() {
                         //back to main menu
                         mainMenu();
                     }
+                });
+            })
+        });
+    }
+
+    function deleteDepartment() {
+
+        // department array
+        let deptArr = [];
+
+        connection.query("SELECT id, department_name FROM departments", function (err, depts) {
+            // add all departments to array
+            for (i=0; i < depts.length; i++){
+                deptArr.push(depts[i].department_name);
+            }
+
+            inquirer.prompt([{
+
+                // confirm to continue to select department to delete
+                name: "continueDelete",
+                type: "list",
+                message: "*** WARNING *** Deleting a department will delete all roles and employees associated with the department. Do you want to continue?",
+                choices: ["NO", "YES"]
+            }]).then((answer) => {
+
+                // if not, go back to main menu
+                if (answer.continueDelete === "NO") {
+                    mainMenu();
+                }
+
+            }).then(() => {
+
+                inquirer.prompt([{
+
+                    // prompt user to select department
+                    name: "dept",
+                    type: "list",
+                    message: "Which department would you like to delete?",
+                    choices: deptArr
+                }, {
+
+                    // confirm with user to delete
+                    name: "confirmDelete",
+                    type: "Input",
+                    message: "Type the department name EXACTLY to confirm deletion of the department: "
+
+                }]).then((answer) => {
+
+                    if (answer.confirmDelete === answer.dept){
+
+                        // if confirmed, get department id
+                        let deptID;
+                        for (i=0; i < depts.length; i++){
+                            if (answer.dept == depts[i].department_name){
+                                deptID = depts[i].id;
+                            }
+                        }
+
+                        // delete department
+                        connection.query(`DELETE FROM departments WHERE id=${deptID};`, (err, res) => {
+                            if(err) return err;
+
+                            // confirm department has been deleted
+                            console.log(`\n DEPARTMENT '${answer.dept}' DELETED...\n `);
+
+                            // back to main menu
+                            mainMenu();
+                        });
+                    }
+                    else {
+
+                        // do not delete department if not confirmed and go back to main menu
+                        console.log(`\n DEPARTMENT '${answer.dept}' NOT DELETED...\n `);
+
+                        //back to main menu
+                        mainMenu();
+                    }
+
                 });
             })
         });
