@@ -41,6 +41,7 @@ function mainMenu() {
                 "Delete employee",
                 "Delete role",
                 "Delete department",
+                "View department budgets",
                 "Exit"
             ]
         })
@@ -79,6 +80,9 @@ function mainMenu() {
                     break;
                 case "Delete department":
                     deleteDepartment();
+                    break;
+                case "View department budgets":
+                    viewDeptBudget();
                     break;
                 case "Exit":
                     connection.end();
@@ -573,6 +577,52 @@ function mainMenu() {
 
                 });
             })
+        });
+    }
+
+    // View Department Budget
+    function viewDeptBudget() {
+
+        // Create connection using promise-sql
+        promisemysql.createConnection(connectionProperties)
+            .then((conn) => {
+                return  Promise.all([
+
+                    // query all departments and salaries
+                    conn.query("SELECT departments.department_name AS department, roles.salary FROM employee e LEFT JOIN employee m ON e.manager_id = m.id INNER JOIN roles ON e.role_id = roles.id INNER JOIN departments ON roles.department_id = departments.id ORDER BY department ASC"),
+                    conn.query('SELECT department_name FROM departments ORDER BY department_name ASC')
+                ]);
+            }).then(([deptSalaies, departments]) => {
+
+            let deptBudgetArr =[];
+            let department;
+
+            for (d=0; d < departments.length; d++){
+                let departmentBudget = 0;
+
+                // add all salaries together
+                for (i=0; i < deptSalaies.length; i++){
+                    if (departments[d].department_name == deptSalaies[i].department){
+                        departmentBudget += deptSalaies[i].salary;
+                    }
+                }
+
+                // create new property with budgets
+                department = {
+                    Department: departments[d].department_name,
+                    Budget: departmentBudget
+                }
+
+                // add to array
+                deptBudgetArr.push(department);
+            }
+            console.log("\n");
+
+            // display departments budgets using console.table
+            console.table(deptBudgetArr);
+
+            // back to main menu
+            mainMenu();
         });
     }
 }
