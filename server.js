@@ -33,6 +33,7 @@ function mainMenu() {
                 "View all departments",
                 "View all employees",
                 "View all roles",
+                "View all employees by manager",
                 "Add a department",
                 "Add a role",
                 "Add an employee",
@@ -56,6 +57,9 @@ function mainMenu() {
                     break;
                 case "View all roles":
                     viewRoles();
+                    break;
+                case "View all employees by manager":
+                    viewAllEmpByMngr();
                     break;
                 case "Add a department":
                     addDept();
@@ -113,6 +117,69 @@ function mainMenu() {
             mainMenu();
         });
     };
+
+    function viewAllEmpByMngr() {
+
+        // set manager array
+        let managerArr = [];
+
+        // Create connection using promise-sql
+        promisemysql.createConnection(connectionProperties)
+            .then((conn) => {
+
+                // Query all employees
+                return conn.query("SELECT DISTINCT m.id, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee e Inner JOIN employee m ON e.manager_id = m.id");
+
+            }).then(function(managers){
+
+            // place all employees in array
+            for (i=0; i < managers.length; i++){
+                managerArr.push(managers[i].manager);
+            }
+
+            return managers;
+        }).then((managers) => {
+
+            inquirer.prompt({
+
+                // Prompt user of manager
+                name: "manager",
+                type: "list",
+                message: "Which manager would you like to search?",
+                choices: managerArr
+            })
+                .then((answer) => {
+
+                    let managerID;
+
+                    // get ID of manager selected
+                    for (i=0; i < managers.length; i++){
+                        if (answer.manager == managers[i].manager){
+                            managerID = managers[i].id;
+                        }
+                    }
+
+                    // query all employees by selected manager
+                    const query = `SELECT e.id, e.first_name, e.last_name, roles.title, departments.department_name AS department, roles.salary, concat(m.first_name, ' ' ,  m.last_name) AS manager
+            FROM employee e
+            LEFT JOIN employee m ON e.manager_id = m.id
+            INNER JOIN roles ON e.role_id = roles.id
+            INNER JOIN departments ON roles.department_id = departments.id
+            WHERE e.manager_id = ${managerID};`;
+
+                    connection.query(query, (err, res) => {
+                        if(err) return err;
+
+                        // display results with console.table
+                        console.log("\n");
+                        console.table(res);
+
+                        // back to main menu
+                        mainMenu();
+                    });
+                });
+        });
+    }
 
     function addDept() {
         inquirer
