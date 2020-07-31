@@ -1,7 +1,6 @@
-DROP DATABASE IF EXISTS all_employees;
-CREATE database all_employees;
-
-USE all_employees;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS employee;
 
 CREATE TABLE departments (
   id INT NOT NULL,
@@ -25,12 +24,3 @@ CREATE TABLE employee (
   manager_id INT,
   PRIMARY KEY (id)
 );
-
-
-SELECT department.id, roles.department_id
-FROM  departments
-INNER JOIN roles ON department.id=roles.department_id;
-
-SELECT employee.role_id, roles.id
-FROM employee
-INNER JOIN roles ON employee.role_id=roles.id;
