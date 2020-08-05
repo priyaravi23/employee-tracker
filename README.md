@@ -1,20 +1,31 @@
-## Employee Tracker 
+## Employee Tracker
 
 *A command-line application to manage a company's employee database, using Node.js, Inquirer, and MySQL*
 
 ### App Demo
 
+- View all departments, view all employees, view all roles
+- add a department, add a role
+
 ![](images/demo-1.gif)
+
+- Delete a department, delete a role, exit  
 
 ![](images/demo-2.gif)
 
+- Add an employee, update employee manager, delete an employee
+
 ![](images/demo-3.gif)
+
+- Update employee role, view department budgets
 
 ![](images/demo-4.gif)
 
+- View all employees by manager, view all employees by department
+
 ![](images/demo-5.gif)
 
-### User Story 
+### User Story
 
 ```text
 AS A business owner
@@ -41,36 +52,36 @@ THEN I am prompted to enter the name, salary, and department for the role and th
 WHEN I choose to add an employee
 THEN I am prompted to enter the employee’s first name, last name, role, and manager and that employee is added to the database
 WHEN I choose to update an employee role
-THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
+THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 ```
 
-### Database Schema Design 
+### Database Schema Design
 
 ![](images/schema-design.png)
 
 ### Schema Description
 
-- Department 
+- Department
     - `id`: INT PRIMARY KEY
-    
+
     - `name`: VARCHAR(30) to hold department name
-    
+
 - Role
     - `id`: INT PRIMARY KEY
-      
+
     - `title`: VARCHAR(30) to hold role title
-      
+
     - `salary`: DECIMAL to hold role salary
-      
+
     - `department_id`: INT to hold reference to department role belongs to
-    
+
 - Employee
     - `id`: INT PRIMARY KEY
-   
+
     - `first_name`: VARCHAR(30) to hold employee first name
-      
+
     - `last_name`: VARCHAR(30) to hold employee last name
-      
+
     - `role_id`: INT to hold reference to employee role
-      
+
     - `manager_id`: INT to hold reference to another employee that is manager of the current employee. This field may be null if the employee has no manager.
