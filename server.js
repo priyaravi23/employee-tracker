@@ -1,6 +1,8 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
+const chalk = require('chalk');
+const figlet = require('figlet');
 const promisemysql = require("promise-mysql");
 
 const connectionProperties = {
@@ -19,8 +21,13 @@ connection.connect(err => {
         return console.error('error: ' + err.message);
     }
 
-    console.log('Connected to the MySQL server.');
-    mainMenu();
+    console.log(chalk.yellow.bold(`==============================================================================================`));
+    console.log(``);
+    console.log(chalk.red.bold(figlet.textSync('Employee Tracker')));
+    console.log(``);
+    console.log(`                                                                    ` + chalk.blue.bold('Created By: Priya Ravi'));
+    console.log(``);
+    console.log(chalk.yellow.bold(`==============================================================================================`));    mainMenu();
 });
 
 function mainMenu() {

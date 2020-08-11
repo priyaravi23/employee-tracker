@@ -2,6 +2,10 @@
 
 *A command-line application to manage a company's employee database, using Node.js, Inquirer, and MySQL*
 
+### App Screenshot
+
+![](images/app-screenshot.png)
+
 ### App Demo
 
 - View all departments, view all employees, view all roles
