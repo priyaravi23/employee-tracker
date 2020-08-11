@@ -108,6 +108,10 @@ function mainMenu() {
     function viewDepartments() {
         let query = "SELECT * FROM  departments";
         connection.query(query, function(err, res) {
+            console.log(chalk.yellow.bold(`====================================================================================`));
+            console.log(`                              ` + chalk.green.bold(`All Departments:`));
+            console.log(chalk.yellow.bold(`====================================================================================`));
+
             console.table(res);
             mainMenu();
         });
@@ -116,14 +120,25 @@ function mainMenu() {
     function viewEmployees() {
         let query = "SELECT e.id, e.first_name, e.last_name, roles.title, departments.department_name AS department, roles.salary, concat(m.first_name, ' ' ,  m.last_name) AS manager FROM employee e LEFT JOIN employee m ON e.manager_id = m.id INNER JOIN roles ON e.role_id = roles.id INNER JOIN departments ON roles.department_id = departments.id ORDER BY id ASC";
         connection.query(query, function(err, res) {
+            console.log(chalk.yellow.bold(`====================================================================================`));
+            console.log(`                              ` + chalk.green.bold(`Current Employees:`));
+            console.log(chalk.yellow.bold(`====================================================================================`));
+
             console.table(res);
             mainMenu();
         });
     };
 
     function viewRoles() {
-        let query = "SELECT * FROM  roles";
+        let query = `SELECT roles.id, roles.title, departments.department_name AS department, roles.salary
+                  FROM roles
+                  INNER JOIN departments ON roles.department_id = departments.id`;
+
         connection.query(query, function(err, res) {
+            console.log(chalk.yellow.bold(`====================================================================================`));
+            console.log(`                              ` + chalk.green.bold(`Current Employee Roles:`));
+            console.log(chalk.yellow.bold(`====================================================================================`));
+
             console.table(res);
             mainMenu();
         });
@@ -183,6 +198,10 @@ function mainMenu() {
 
                         // display results with console.table
                         console.log("\n");
+                        console.log(chalk.yellow.bold(`====================================================================================`));
+                        console.log(`                              ` + chalk.green.bold(`Employees by Manager:`));
+                        console.log(chalk.yellow.bold(`====================================================================================`));
+
                         console.table(res);
 
                         // back to main menu
@@ -229,6 +248,11 @@ function mainMenu() {
 
                         // Show results in console.table
                         console.log("\n");
+
+                        console.log(chalk.yellow.bold(`====================================================================================`));
+                        console.log(`                              ` + chalk.green.bold(`Employees by Department:`));
+                        console.log(chalk.yellow.bold(`====================================================================================`));
+
                         console.table(res);
 
                         // Back to main menu
@@ -706,44 +730,19 @@ function mainMenu() {
 
     // View Department Budget
     function viewDeptBudget() {
+        console.log(chalk.yellow.bold(`====================================================================================`));
+        console.log(`                              ` + chalk.green.bold(`Budget By Department:`));
+        console.log(chalk.yellow.bold(`====================================================================================`));
 
-        // Create connection using promise-sql
-        promisemysql.createConnection(connectionProperties)
-            .then((conn) => {
-                return  Promise.all([
-
-                    // query all departments and salaries
-                    conn.query("SELECT departments.department_name AS department, roles.salary FROM employee e LEFT JOIN employee m ON e.manager_id = m.id INNER JOIN roles ON e.role_id = roles.id INNER JOIN departments ON roles.department_id = departments.id ORDER BY department ASC"),
-                    conn.query('SELECT department_name FROM departments ORDER BY department_name ASC')
-                ]);
-            }).then(([deptSalaies, departments]) => {
-
-            let deptBudgetArr =[];
-            let department;
-
-            for (d=0; d < departments.length; d++){
-                let departmentBudget = 0;
-
-                // add all salaries together
-                for (i=0; i < deptSalaies.length; i++){
-                    if (departments[d].department_name == deptSalaies[i].department){
-                        departmentBudget += deptSalaies[i].salary;
-                    }
-                }
-
-                // create new property with budgets
-                department = {
-                    Department: departments[d].department_name,
-                    Budget: departmentBudget
-                }
-
-                // add to array
-                deptBudgetArr.push(department);
-            }
-            console.log("\n");
-
-            // display departments budgets using console.table
-            console.table(deptBudgetArr);
+        const sql =     `SELECT department_id AS id, 
+                  departments.department_name AS department,
+                  SUM(salary) AS budget
+                  FROM  roles 
+                  INNER JOIN departments ON roles.department_id = departments.id GROUP BY roles.department_id`;
+        connection.query(sql, (error, response) => {
+            if (error) throw error;
+            console.table(response);
+            console.log(chalk.yellow.bold(`====================================================================================`));
 
             // back to main menu
             mainMenu();
