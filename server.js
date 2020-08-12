@@ -4,16 +4,7 @@ const cTable = require('console.table');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const promisemysql = require("promise-mysql");
-
-const connectionProperties = {
-    host: "localhost",
-    port: 3306,
-    user: "root",
-    password: "Bio_medical23",
-    database: "all_employees"
-};
-
-const connection = mysql.createConnection(connectionProperties);
+const { connectionProperties, connection } = require('./config/connection');
 
 // establishes connection to db
 connection.connect(err => {
